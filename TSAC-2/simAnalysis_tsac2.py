@@ -11,7 +11,6 @@ import re
 import sys
 import numpy as np
 import pandas as pd 
-import matplotlib.pyplot as plt
 #====================
 
 ### selection ###
@@ -21,11 +20,11 @@ energy_threshold = float(sys.argv[3])          # sys.argv[3] is energy threshold
 output_low_energy_limit = float(sys.argv[4])   # sys.argv[4] is output low energy limit
 output_high_energy_limit = float(sys.argv[5])  # sys.argv[5] is output high energy limit
 
-# pixel_position_file = '/Users/jasonpbu/Desktop/TSAC/DataAnalysis/TSAC-2/rate_analysis/PixelPosition.csv'              # sys.argv[1] is pixel position file
-# sim_file = '/Users/jasonpbu/Desktop/TSAC/DataAnalysis/TSAC-2/rate_analysis/LongGRB_45_60.inc1.id1.sim'                         # sys.argv[2] is sim file
-# energy_threshold = 15          # sys.argv[3] is energy threshold
-# output_low_energy_limit = 50   # sys.argv[4] is output low energy limit
-# output_high_energy_limit = 300  # sys.argv[5] is output high energy limit
+# pixel_position_file = '/Users/jasonpbu/Desktop/TSAC/DataAnalysis/TSAC-2/rate_analysis/PixelPosition.csv'
+# sim_file = '/Users/jasonpbu/Desktop/TSAC/DataAnalysis/TSAC-2/rate_analysis/LongGRB_45_60.inc1.id1.sim'
+# energy_threshold = 15
+# output_low_energy_limit = 50
+# output_high_energy_limit = 300
 #====================
 
 ### fixed variables ###
@@ -79,7 +78,7 @@ def ExtractUsefulInfo(PixelPositionFile, SimFile):
             direction = 'bkg'
     return pixel_position_df, direction, time, total_events_list
    
-def CountRate_and_HitDistribution(PixelPositionDF, Time, TotalEventsList, EnergyThreshold, OutputLowEnergyLimit, OutputHighEnergyLimit):
+def CountRate_and_HitRate(PixelPositionDF, Time, TotalEventsList, EnergyThreshold, OutputLowEnergyLimit, OutputHighEnergyLimit):
     event_count = 0
     total_hits_above_energy_threshold_list = []
     for each_event_list in TotalEventsList:
@@ -99,35 +98,38 @@ def CountRate_and_HitDistribution(PixelPositionDF, Time, TotalEventsList, Energy
     combined_hits_above_energy_threshold_df = total_hits_above_energy_threshold_df.groupby(['Event', 'Detector']).agg({'Energy': 'sum', 'Hit': 'count'}).reset_index()
     combined_hits_above_energy_threshold_in_output_energy_df = combined_hits_above_energy_threshold_df[(combined_hits_above_energy_threshold_df['Energy'] >= OutputLowEnergyLimit) & (combined_hits_above_energy_threshold_df['Energy'] <= OutputHighEnergyLimit)]
     
-    count_rate_df = combined_hits_above_energy_threshold_in_output_energy_df.groupby('Detector').size().to_frame('Count Rate')
-    count_rate_df['Count Rate'] = count_rate_df['Count Rate'].div(Time)
+    count_rate_df = combined_hits_above_energy_threshold_in_output_energy_df.groupby('Detector').size().to_frame('Number Rate')
+    count_rate_df['Number Rate'] = count_rate_df['Number Rate'].div(Time)
     
-    hit_distribution_df = combined_hits_above_energy_threshold_df.groupby('Hit').size().to_frame('Number Rate')
-    hit_distribution_df['Number Rate'] = hit_distribution_df['Number Rate'].div(Time)
-    return count_rate_df, hit_distribution_df
+    hit_rate_df = combined_hits_above_energy_threshold_df.groupby('Hit').size().to_frame('Number Rate')
+    hit_rate_df['Number Rate'] = hit_rate_df['Number Rate'].div(Time)
+    return count_rate_df, hit_rate_df
 
-def PrintOutput(SimFile, Direction, Time, CountRateDF, HitDistributionDF):
-    print('==================================================')
-    print('sim file            :', SimFile)
-    print('source direction    :', Direction)
-    print('simulation time     :', float(Time[0]))
-    print('energy threshold    :', energy_threshold) 
-    print('output energy range :', (output_low_energy_limit, output_high_energy_limit))
-    print('--------------------')
-    print('count rate          :')
+def PrintOutput(SimFile, Direction, Time, CountRateDF, HitRateDF):
+    print('======================================================================')
+    print('sim file                      :', SimFile)
+    print('source direction (theta, phi) :', Direction)
+    print('simulation time               :', float(Time[0]))
+    print('energy threshold for GAGG     :', energy_threshold) 
+    print('output energy range           :', (output_low_energy_limit, output_high_energy_limit))
+    print('--------------------------------------------------')
+    print('count rate :')
+    print('# consider energy threshold')
+    print('# consider output energy range for each detector')
     print(CountRateDF)
-    print('--------------------')
-    print('hit distribution    :')
-    print(HitDistributionDF)
-    print('==================================================')
+    print('--------------------------------------------------')
+    print('hit rate :')
+    print('# only consider energy threshold')
+    print(HitRateDF)
+    print('======================================================================')
     return
 #====================
 
 ### main code ###
 if __name__ == "__main__":
     pixel_position_df, direction, time, total_events_list = ExtractUsefulInfo(pixel_position_file, sim_file)
-    count_rate_df, hit_distribution_df = CountRate_and_HitDistribution(pixel_position_df, float(time[0]), total_events_list, energy_threshold, output_low_energy_limit, output_high_energy_limit)
-    PrintOutput(sim_file, direction, time, count_rate_df, hit_distribution_df)
+    count_rate_df, hit_rate_df = CountRate_and_HitRate(pixel_position_df, float(time[0]), total_events_list, energy_threshold, output_low_energy_limit, output_high_energy_limit)
+    PrintOutput(sim_file, direction, time, count_rate_df, hit_rate_df)
 #====================
 
 
