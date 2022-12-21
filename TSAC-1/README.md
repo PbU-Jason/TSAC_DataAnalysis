@@ -2,7 +2,7 @@
 
 ### Run
 
-###### before running the code, please make sure upgrade the pandas & numexpr to latest version!
+###### before running the code, please make sure to upgrade the pandas & numexpr to the latest version!
 
 `python3 simAnalysis_tsac1.py <pixel_position> <sim_file> <output_energy_lower_cut> <output_energy_higher_cut> <anti_coincidence_mode>`
 
@@ -20,7 +20,7 @@
 ### Output Example
 
 ```
-simy@crab6:/disk1/dog/TSAC_1/src_Crab/jason_py$ nohup python3 simAnalysis_tsac1.py TSAC-1_PixelPosition.csv 
+simy@crab6:/disk1/dog/TSAC_1/src_Crab/jason_py$ python3 simAnalysis_tsac1.py TSAC-1_PixelPosition.csv Crab_pol_10ks_rotate_45.inc1.id1.sim 160 250 True
  
  ======================================================================
  sim file                      : Crab_pol_10ks_rotate_45.inc1.id1.sim
